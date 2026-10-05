@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SSL Certificate Checker — Check When Your Certificate Expires</title>
+  <meta name="description" content="Free tool to check when your SSL certificate expires. Enter any domain and see days remaining before expiry, issuer details, and expiry date.">
+  <meta name="keywords" content="ssl certificate checker, ssl certificate expiry, check ssl expiry, ssl expiry date, certificate monitor">
+  <link rel="canonical" href="https://lior-seats.github.io/ssl-cert-checker/">
+  <meta property="og:title" content="SSL Certificate Checker — Check When Your Certificate Expires">
+  <meta property="og:description" content="Free tool to check when your SSL certificate expires. Enter any domain and see days remaining before expiry.">
+  <meta property="og:url" content="https://lior-seats.github.io/ssl-cert-checker/">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="SSL Certificate Checker">
+  <meta name="twitter:description" content="Free tool to check SSL certificate expiry for any domain.">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem}
+    .container{max-width:680px;width:100%}
+    h1{font-size:2rem;font-weight:700;color:#f8fafc;margin-bottom:.5rem;text-align:center}
+    .subtitle{color:#94a3b8;text-align:center;margin-bottom:2.5rem;font-size:1.05rem}
+    .checker-box{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:2rem;margin-bottom:1.5rem}
+    .input-row{display:flex;gap:.75rem}
+    input[type="text"]{flex:1;padding:.75rem 1rem;background:#0f172a;border:1px solid #475569;border-radius:8px;color:#f1f5f9;font-size:1rem;outline:none}
+    input[type="text"]:focus{border-color:#6366f1}
+    input[type="text"]::placeholder{color:#64748b}
+    button{padding:.75rem 1.5rem;background:#6366f1;color:white;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .2s}
+    button:hover{background:#4f46e5}
+    button:disabled{background:#475569;cursor:not-allowed}
+    #result{margin-top:1.5rem;display:none}
+    .result-card{border-radius:8px;padding:1.25rem;border:1px solid}
+    .result-card.green{background:rgba(16,185,129,.1);border-color:#10b981}
+    .result-card.yellow{background:rgba(245,158,11,.1);border-color:#f59e0b}
+    .result-card.red{background:rgba(239,68,68,.1);border-color:#ef4444}
+    .result-card.offline{background:rgba(100,116,139,.1);border-color:#475569}
+    .days-badge{font-size:2rem;font-weight:800;display:block;margin-bottom:.25rem}
+    .days-badge.green{color:#10b981}
+    .days-badge.yellow{color:#f59e0b}
+    .days-badge.red{color:#ef4444}
+    .result-meta{font-size:.9rem;color:#94a3b8;margin-top:.75rem;line-height:1.8}
+    .code-block{background:#0f172a;border:1px solid #334155;border-radius:6px;padding:.75rem 1rem;font-family:'Courier New',monospace;font-size:.82rem;color:#a5f3fc;margin:.75rem 0;word-break:break-all}
+    .cta-box{background:linear-gradient(135deg,#1e1b4b 0%,#1e293b 100%);border:1px solid #6366f1;border-radius:12px;padding:2rem;text-align:center;margin-top:1.5rem}
+    .cta-box h2{font-size:1.3rem;color:#f8fafc;margin-bottom:.5rem}
+    .cta-box p{color:#94a3b8;margin-bottom:1.25rem;font-size:.95rem}
+    .cta-btn{display:inline-block;padding:.75rem 2rem;background:#6366f1;color:white;text-decoration:none;border-radius:8px;font-weight:600;transition:background .2s}
+    .cta-btn:hover{background:#4f46e5}
+    .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin:2rem 0}
+    .feature{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:1rem;text-align:center;font-size:.9rem;color:#94a3b8}
+    .feature .icon{font-size:1.5rem;display:block;margin-bottom:.5rem}
+    footer{margin-top:3rem;color:#475569;font-size:.85rem;text-align:center}
+    @media(max-width:480px){.input-row{flex-direction:column}h1{font-size:1.5rem}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔒 SSL Certificate Checker</h1>
+    <p class="subtitle">Check when any domain's SSL certificate expires — instantly, for free.</p>
+    <div class="checker-box">
+      <div class="input-row">
+        <input type="text" id="domainInput" placeholder="example.com" autocomplete="off" spellcheck="false">
+        <button id="checkBtn" onclick="checkCert()">Check Certificate</button>
+      </div>
+      <div id="result"></div>
+    </div>
+    <div class="features">
+      <div class="feature"><span class="icon">📅</span>Expiry date &amp; days remaining</div>
+      <div class="feature"><span class="icon">🏢</span>Certificate issuer info</div>
+      <div class="feature"><span class="icon">🚦</span>Green / yellow / red status</div>
+      <div class="feature"><span class="icon">⚡</span>Instant, no signup needed</div>
+    </div>
+    <div class="cta-box">
+      <h2>Never get caught by an expired certificate again</h2>
+      <p>SSLWatch monitors all your domains and sends email alerts 30, 14, 7, and 1 day before any certificate expires. $9/month for up to 50 domains.</p>
+      <a href="https://lior-seats.github.io/sslwatch-waitlist/" class="cta-btn">Join SSLWatch Waitlist →</a>
+    </div>
+  </div>
+  <footer>Free SSL certificate checker · <a href="https://lior-seats.github.io/sslwatch-waitlist/" style="color:#6366f1">SSLWatch monitoring</a></footer>
+  <script>
+    fetch('https://agent-control-plane-w3m9.onrender.com/api/hit?page=ssl-cert-checker',{mode:'no-cors'}).catch(()=>{});
+    const p=new URLSearchParams(window.location.search);
+    if(p.get('domain'))document.getElementById('domainInput').value=p.get('domain');
+    document.getElementById('domainInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkCert()});
+    async function checkCert(){
+      let domain=document.getElementById('domainInput').value.trim().replace(/^https?:\/\//i,'').replace(/\/.*/,'').trim();
+      if(!domain)return;
+      const btn=document.getElementById('checkBtn'),result=document.getElementById('result');
+      btn.disabled=true;btn.textContent='Checking…';result.style.display='none';
+      try{
+        const res=await fetch('https://agent-control-plane-w3m9.onrender.com/api/ssl-check?domain='+encodeURIComponent(domain));
+        if(res.ok){const data=await res.json();showSuccess(domain,data);}else{showOffline(domain);}
+      }catch(e){showOffline(domain);}
+      finally{btn.disabled=false;btn.textContent='Check Certificate';result.style.display='block';}
+    }
+    function showSuccess(domain,data){
+      const days=data.days_remaining,cls=days>30?'green':days>7?'yellow':'red';
+      const label=days>0?days+' days remaining':'Expired '+Math.abs(days)+' days ago';
+      document.getElementById('result').innerHTML='<div class="result-card '+cls+'"><span class="days-badge '+cls+'">'+label+'</span><div class="result-meta"><strong>Domain:</strong> '+esc(domain)+'<br><strong>Expires:</strong> '+(data.expires_at?new Date(data.expires_at).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}):'Unknown')+'<br><strong>Issuer:</strong> '+esc(data.issuer||'Unknown')+'<br><strong>Valid:</strong> '+(data.valid?'✅ Yes':'❌ No')+'</div></div>';
+    }
+    function showOffline(domain){
+      document.getElementById('result').innerHTML='<div class="result-card offline"><strong style="color:#f1f5f9">Certificate check temporarily offline</strong><p style="margin-top:.5rem;color:#94a3b8;font-size:.9rem">Run this command locally:</p><div class="code-block">openssl s_client -connect '+esc(domain)+':443 2>/dev/null | openssl x509 -noout -dates</div><p style="color:#94a3b8;font-size:.9rem;margin-top:.5rem">Or join <a href="https://lior-seats.github.io/sslwatch-waitlist/" style="color:#6366f1">SSLWatch</a> for automated email alerts.</p></div>';
+    }
+    function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  </script>
+</body>
+</html>
