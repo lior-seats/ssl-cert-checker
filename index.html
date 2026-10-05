@@ -49,6 +49,12 @@
     .feature{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:1rem;text-align:center;font-size:.9rem;color:#94a3b8}
     .feature .icon{font-size:1.5rem;display:block;margin-bottom:.5rem}
     footer{margin-top:3rem;color:#475569;font-size:.85rem;text-align:center}
+    .share-row{display:flex;gap:.6rem;margin-top:1rem;flex-wrap:wrap}
+    .share-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem 1rem;border-radius:6px;border:none;cursor:pointer;font-size:.875rem;font-weight:600;transition:opacity .15s;text-decoration:none;white-space:nowrap}
+    .share-btn:hover{opacity:.8;text-decoration:none}
+    .share-btn-x{background:#000;color:#fff}
+    .share-btn-copy{background:#1e293b;color:#e2e8f0;border:1px solid #475569}
+    .share-btn-copy.ok{background:#0f4c2a;border-color:#10b981;color:#6ee7b7}
     @media(max-width:480px){.input-row{flex-direction:column}h1{font-size:1.5rem}}
   </style>
 </head>
@@ -62,6 +68,13 @@
         <button id="checkBtn" onclick="checkCert()">Check Certificate</button>
       </div>
       <div id="result"></div>
+      <div id="share-row" class="share-row" style="display:none">
+        <a id="share-x-btn" class="share-btn share-btn-x" href="#" target="_blank" rel="noopener noreferrer">
+          <svg width="13" height="13" viewBox="0 0 1200 1227" fill="currentColor"><path d="M714.163 519.284L1160.89 0h-105.86L667.137 450.887 357.328 0H0l468.492 681.821L0 1226.37h105.866l409.625-476.152 327.181 476.152H1200L714.163 519.284zm-144.418 167.892l-47.468-67.894L144.011 79.672h162.604l304.797 435.991 47.468 67.894 396.2 566.721H892.476L569.745 687.176z"/></svg>
+          Share on 𝕏
+        </a>
+        <button id="share-copy-btn" class="share-btn share-btn-copy" onclick="copyResult()">📋 Copy result</button>
+      </div>
     </div>
     <div class="features">
       <div class="feature"><span class="icon">📅</span>Expiry date &amp; days remaining</div>
@@ -95,10 +108,35 @@
     function showSuccess(domain,data){
       const days=data.days_remaining,cls=days>30?'green':days>7?'yellow':'red';
       const label=days>0?days+' days remaining':'Expired '+Math.abs(days)+' days ago';
-      document.getElementById('result').innerHTML='<div class="result-card '+cls+'"><span class="days-badge '+cls+'">'+label+'</span><div class="result-meta"><strong>Domain:</strong> '+esc(domain)+'<br><strong>Expires:</strong> '+(data.expires_at?new Date(data.expires_at).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}):'Unknown')+'<br><strong>Issuer:</strong> '+esc(data.issuer||'Unknown')+'<br><strong>Valid:</strong> '+(data.valid?'✅ Yes':'❌ No')+'</div></div>';
+      const expiry=data.expires_at?new Date(data.expires_at).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}):'Unknown';
+      document.getElementById('result').innerHTML='<div class="result-card '+cls+'"><span class="days-badge '+cls+'">'+label+'</span><div class="result-meta"><strong>Domain:</strong> '+esc(domain)+'<br><strong>Expires:</strong> '+expiry+'<br><strong>Issuer:</strong> '+esc(data.issuer||'Unknown')+'<br><strong>Valid:</strong> '+(data.valid?'✅ Yes':'❌ No')+'</div></div>';
+      // Share buttons
+      const shareText=encodeURIComponent(domain+' SSL cert: '+label+'\nExpires: '+expiry+'\nIssuer: '+(data.issuer||'Unknown')+'\n\nCheck yours free: https://lior-seats.github.io/ssl-cert-checker/');
+      document.getElementById('share-x-btn').href='https://twitter.com/intent/tweet?text='+shareText;
+      const copyBtn=document.getElementById('share-copy-btn');
+      copyBtn.classList.remove('ok');copyBtn.textContent='📋 Copy result';
+      document.getElementById('share-row').style.display='flex';
     }
     function showOffline(domain){
       document.getElementById('result').innerHTML='<div class="result-card offline"><strong style="color:#f1f5f9">Certificate check temporarily offline</strong><p style="margin-top:.5rem;color:#94a3b8;font-size:.9rem">Run this command locally:</p><div class="code-block">openssl s_client -connect '+esc(domain)+':443 2>/dev/null | openssl x509 -noout -dates</div><p style="color:#94a3b8;font-size:.9rem;margin-top:.5rem">Or join <a href="https://lior-seats.github.io/sslwatch-waitlist/" style="color:#6366f1">SSLWatch</a> for automated email alerts.</p></div>';
+    }
+    function copyResult(){
+      const domain=document.getElementById('domainInput').value.trim().replace(/^https?:\/\//i,'').replace(/\/.*/,'').trim();
+      const result=document.getElementById('result');
+      const badge=result.querySelector('.days-badge');
+      const meta=result.querySelector('.result-meta');
+      if(!badge)return;
+      const text=domain+' SSL cert: '+badge.textContent.trim()+'\n'+meta.innerText.replace(/<[^>]+>/g,'')+'\n\nCheck yours free: https://lior-seats.github.io/ssl-cert-checker/';
+      const btn=document.getElementById('share-copy-btn');
+      navigator.clipboard.writeText(text).then(()=>{
+        btn.classList.add('ok');btn.textContent='✓ Copied!';
+        setTimeout(()=>{btn.classList.remove('ok');btn.textContent='📋 Copy result';},1800);
+      }).catch(()=>{
+        const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+        document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+        btn.classList.add('ok');btn.textContent='✓ Copied!';
+        setTimeout(()=>{btn.classList.remove('ok');btn.textContent='📋 Copy result';},1800);
+      });
     }
     function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
   </script>
