@@ -55,6 +55,11 @@
     .share-btn-x{background:#000;color:#fff}
     .share-btn-copy{background:#1e293b;color:#e2e8f0;border:1px solid #475569}
     .share-btn-copy.ok{background:#0f4c2a;border-color:#10b981;color:#6ee7b7}
+    #monitor-row{margin-top:.85rem;display:none}
+    .monitor-btn{width:100%;padding:.75rem 1rem;background:#6366f1;color:#fff;border:none;border-radius:9px;font-size:.95rem;font-weight:700;cursor:pointer;transition:background .2s;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+    .monitor-btn:hover{background:#4f46e5}
+    .monitor-btn:disabled{background:#475569;cursor:not-allowed}
+    .monitor-msg{font-size:.8rem;color:#94a3b8;margin-top:.4rem;min-height:1rem}
     @media(max-width:480px){.input-row{flex-direction:column}h1{font-size:1.5rem}}
   </style>
 <script type="application/ld+json">
@@ -83,6 +88,13 @@
         <button id="checkBtn" onclick="checkCert()">Check Certificate</button>
       </div>
       <div id="result"></div>
+      <div id="monitor-row">
+        <button class="monitor-btn" id="monitor-btn" onclick="monitorDomain()">
+          <span>🔔 Monitor <span id="monitor-domain-label">this domain</span> automatically</span>
+          <span style="font-size:.82rem;font-weight:400;opacity:.85">$9/mo →</span>
+        </button>
+        <div class="monitor-msg" id="monitor-msg"></div>
+      </div>
       <div id="share-row" class="share-row" style="display:none">
         <a id="share-x-btn" class="share-btn share-btn-x" href="#" target="_blank" rel="noopener noreferrer">
           <svg width="13" height="13" viewBox="0 0 1200 1227" fill="currentColor"><path d="M714.163 519.284L1160.89 0h-105.86L667.137 450.887 357.328 0H0l468.492 681.821L0 1226.37h105.866l409.625-476.152 327.181 476.152H1200L714.163 519.284zm-144.418 167.892l-47.468-67.894L144.011 79.672h162.604l304.797 435.991 47.468 67.894 396.2 566.721H892.476L569.745 687.176z"/></svg>
@@ -131,6 +143,12 @@
       const copyBtn=document.getElementById('share-copy-btn');
       copyBtn.classList.remove('ok');copyBtn.textContent='📋 Copy result';
       document.getElementById('share-row').style.display='flex';
+      // Monitor button
+      document.getElementById('monitor-domain-label').textContent=esc(domain);
+      const monBtn=document.getElementById('monitor-btn');
+      monBtn.disabled=false;monBtn.dataset.domain=domain;
+      document.getElementById('monitor-msg').textContent='';
+      document.getElementById('monitor-row').style.display='block';
     }
     function showOffline(domain){
       document.getElementById('result').innerHTML='<div class="result-card offline"><strong style="color:#f1f5f9">Certificate check temporarily offline</strong><p style="margin-top:.5rem;color:#94a3b8;font-size:.9rem">Run this command locally:</p><div class="code-block">openssl s_client -connect '+esc(domain)+':443 2>/dev/null | openssl x509 -noout -dates</div><p style="color:#94a3b8;font-size:.9rem;margin-top:.5rem">Or join <a href="https://lior-seats.github.io/sslwatch-waitlist/" style="color:#6366f1">SSLWatch</a> for automated email alerts.</p></div>';
@@ -152,6 +170,33 @@
         btn.classList.add('ok');btn.textContent='✓ Copied!';
         setTimeout(()=>{btn.classList.remove('ok');btn.textContent='📋 Copy result';},1800);
       });
+    }
+    async function monitorDomain(){
+      const domain=document.getElementById('monitor-btn').dataset.domain;
+      const btn=document.getElementById('monitor-btn');
+      const msg=document.getElementById('monitor-msg');
+      btn.disabled=true;
+      const span=btn.querySelector('span:first-child');
+      span.textContent='Connecting to checkout…';
+      try{
+        const res=await fetch('https://agent-control-plane-w3m9.onrender.com/api/checkout/sslwatch',{
+          method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})
+        });
+        const data=await res.json();
+        if(res.status===503||!data.ok){
+          msg.style.color='#94a3b8';
+          msg.innerHTML='Payments launching soon — <a href="https://lior-seats.github.io/sslwatch-waitlist/" style="color:#6366f1">join the waitlist instead</a>.';
+          span.textContent='🔔 Monitor '+esc(domain)+' automatically';
+          btn.disabled=false;
+        }else if(data.url){
+          window.location.href=data.url;
+        }else{throw new Error('No URL');}
+      }catch{
+        msg.style.color='#94a3b8';
+        msg.innerHTML='Payments launching soon — <a href="https://lior-seats.github.io/sslwatch-waitlist/" style="color:#6366f1">join the waitlist</a>.';
+        span.textContent='🔔 Monitor '+esc(domain)+' automatically';
+        btn.disabled=false;
+      }
     }
     function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
   </script>
